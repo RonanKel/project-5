@@ -22,7 +22,7 @@ import logging
 app = flask.Flask(__name__)
 CONFIG = config.configuration()
 
-inDB = False
+
 
 
 ###
@@ -82,34 +82,44 @@ def _calc_times():
 
 #############
 
-@app.route("/_insert_brevet")
+@app.route("/_insert_brevet", methods=["POST"])
 def _insert():
-    inDB = True
-    app.logger.debug("Got a JSON insert request")
 
-    distance = request.args.get("distance", 999, type=float)
-    begin_date = request.args.get("begin_date", type=str)
-    checkpoint = request.args.get("checkpoint", type=list)
+    try:
+        app.logger.debug("Got a JSON find request")
 
-    if len(checkpoint) == 0:
-        return flask.jsonify({"error": "Unable to insert an empty list"})
+        input_json = request.json
 
-    app.logger.debug(checkpoint)
-    app.logger.debug(request.args)
+        begin_date = input_json["begin_date"]
+        distance = input_json["distance"]
+        checkpoints = input_json["checkpoints"]
 
-    brevet_insert(begin_date, distance, checkpoint);
+        if len(checkpoints) == 0:
+            return flask.jsonify({"error": "Unable to insert an empty list"})
 
-    return flask.jsonify()
+        app.logger.debug(checkpoints)
+
+        brevet_insert(begin_date, distance, checkpoints);
+
+        return flask.jsonify(result = {}, message = "Success!", status = 1)
+
+    except:
+        return flask.jsonify(result = {}, message = "Server Error!", status = 0)
+
+
 
 
 @app.route("/_find_brevet")
 def _find():
-    if inDB == False:
-        return flask.jsonify({"error": "There is nothing saved")}
-    app.logger.debug("Got a JSON find request")
-    result = brevet_find()
-    app.logger.debug(result)
-    return flask.jsonify(result)
+
+    try:
+        app.logger.debug("Got a JSON find request")
+        result = brevet_find()
+        app.logger.debug(result)
+        return flask.jsonify(result=result, message="Success!", status=1)
+
+    except:
+        return flask.jsonify(result={}, message="Server Error!", status=0)
 
 
 

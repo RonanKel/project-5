@@ -165,8 +165,10 @@
 		       $.getJSON(FETCH_URL).done(
                          function(data) {
 
+			    if (data.status == 1) {
+
 			    table.closest("form").reset();
-                            var info = data;
+                            var info = data.result;
 
 			    console.log("Got a response: ");				
 			    console.log(info);
@@ -174,7 +176,7 @@
 			    $("#begin_date").val(info.begin_date);
 			    $("#brevet_dist_km").val(info.distance);
 
-			    for (var i = 0; i < data.checkpoints.length; i++) {
+			    for (var i = 0; i < info.checkpoints.length; i++) {
 				var fields = rows[i].querySelectorAll("td");
 				document.getElementsByName("km")[i].value = info.checkpoints[i];
 				calc_times($(rows[i]));
@@ -186,7 +188,12 @@
                             // so don't worry about those.
                             open_time_field.val(moment(times.open).format("YYYY-MM-DDTHH:mm"));
                             close_time_field.val(moment(times.close).format("YYYY-MM-DDTHH:mm"));*/
-	                 }
+	                    }
+			    else {
+				console.log("Insertion failed: ", data.message);
+			    }
+			    }
+			    
                        ).fail(function(err){
                          // In case you get an error...
                          console.log("Error!");
@@ -215,10 +222,25 @@
 
 		       var data_for_backend = {begin_date: begin_date, distance: distance, checkpoints: checkpoints};
 
-		     ;
+		       $.ajax({dataType: 'json', contentType: "application/json", type: 'POST', url: INSERT_URL, data: JSON.stringify(data_for_backend),
+			success: function(data) {
+			    if (data.status == 1) {
+				console.log("Successfully inserted! Response: ", data.message);
+			    }
+			    else {
+				console.log("Insertion failed: ", data.message);
+			    }
+			},
+			error: function(err){
+			    console.log("Error: ", err);
+			}
+			});
+			table.closest("form").reset();
+
+		        });
 
 
-		       $.getJSON(INSERT_URL, {begin_date: begin_date, distance: distance, checkpoint: checkpoints}).done(
+		      /* $.getJSON(INSERT_URL, {begin_date: begin_date, distance: distance, checkpoint: checkpoints}).done(
  			 function(data) {
 	
 			 }
@@ -229,7 +251,7 @@
                        });
 			table.closest("form").reset();
 			
-                    });
+                    });*/
 
 
                 $('input[name="miles"]').change(
