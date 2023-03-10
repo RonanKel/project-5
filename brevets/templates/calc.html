@@ -179,6 +179,11 @@
 			    for (var i = 0; i < info.checkpoints.length; i++) {
 				var fields = rows[i].querySelectorAll("td");
 				document.getElementsByName("km")[i].value = info.checkpoints[i];
+				var km = info.checkpoints[i];
+
+	                        var miles = (0.621371 * km).toFixed(6);
+               		        document.getElementsByName("miles")[i].value = miles;
+				console.log(document.getElementsByName("miles")[i]);
 				calc_times($(rows[i]));
 			    }
 
